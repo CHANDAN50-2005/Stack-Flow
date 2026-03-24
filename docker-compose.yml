@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - codejudge_net
+
+  api-gateway:
+    build: ./backend/api-gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - AUTH_SERVICE_URL=http://auth-service:5001
+      - PROBLEM_SERVICE_URL=http://problem-service:5002
+      - SUBMISSION_SERVICE_URL=http://submission-service:5003
+      - LEADERBOARD_SERVICE_URL=http://leaderboard-service:5004
+    depends_on:
+      - auth-service
+      - problem-service
+      - submission-service
+      - leaderboard-service
+    networks:
+      - codejudge_net
+
+  auth-service:
+    build: ./backend/auth-service
+    ports:
+      - "5001:5001"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/online-judge-auth
+      - JWT_SECRET=supersecretjwtkey
+    depends_on:
+      - mongodb
+    networks:
+      - codejudge_net
+
+  problem-service:
+    build: ./backend/problem-service
+    ports:
+      - "5002:5002"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/online-judge-problems
+    depends_on:
+      - mongodb
+    networks:
+      - codejudge_net
+
+  submission-service:
+    build: ./backend/submission-service
+    ports:
+      - "5003:5003"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/online-judge-submissions
+      - JUDGE0_URL=https://judge0-ce.p.rapidapi.com
+      - JUDGE0_API_KEY=YOUR_RAPID_API_KEY_HERE
+      - JWT_SECRET=supersecretjwtkey
+    depends_on:
+      - mongodb
+    networks:
+      - codejudge_net
+
+  leaderboard-service:
+    build: ./backend/leaderboard-service
+    ports:
+      - "5004:5004"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/online-judge-leaderboard
+      - JWT_SECRET=supersecretjwtkey
+    depends_on:
+      - mongodb
+    networks:
+      - codejudge_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_GATEWAY_URL=http://localhost:5000
+    networks:
+      - codejudge_net
+
+networks:
+  codejudge_net:
+    driver: bridge
+
+volumes:
+  mongodb_data:
