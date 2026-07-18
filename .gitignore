@@ -1,0 +1,41 @@
+# =========================
+# Dependencies
+# =========================
+node_modules/
+**/node_modules/
+
+# =========================
+# Build files
+# =========================
+dist/
+**/dist/
+build/
+**/build/
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Logs
+# =========================
+*.log
+docker_logs.txt
+docker_logs_utf8.txt
+services_logs.txt
+services_logs_utf8.txt
+
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
